@@ -1,0 +1,32 @@
+<!-- views/urls_show.ejs -->
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>TinyApp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous">
+</head>
+
+<body>
+  <header>
+    <% include partials/_header %>
+  </header>
+
+  <dl class="row" style="text-align: center; margin-top: 210px; margin-left: 280px">
+    <dt class="col-sm-3">The full URL: </dt>
+    <dd class="col-sm-9">
+      <%= urls[shortURL] %>
+    </dd>
+    <dt class="col-sm-3">The shortened form: </dt>
+    <dd class="col-sm-9">
+      <%= shortURL %>
+    </dd>
+  </dl>
+</body>
+
+</html>
