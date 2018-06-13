@@ -49,7 +49,10 @@ app.get("/", (req, res) => {
  *  a route that renders 'urls_new.ejs' page that takes a long URL input from user
  */
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
 /**
@@ -58,7 +61,8 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    urls: urlDatabase
+    urls: urlDatabase,
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -121,6 +125,10 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+/**
+ *  the program will not exit, it will create a web server, which will sit there listening for requests 
+ *  on port 8080, allowing you to access any local path on 8080
+ */
 app.listen(PORT, () => {
   console.log(`Pocket-Size app is listening on port ${PORT}!`);
 });
