@@ -80,6 +80,14 @@ app.post("/urls", (req, res) => {
   res.redirect('http://localhost:8080/urls/' + shortURL);
 });
 
+/**
+ *  a route that handles the POST request to delete a specific URL from the URL database
+ */
+app.post("/urls/:id/delete", (req, res) => {
+  delete urlDatabase[req.params.id];
+  res.redirect('http://localhost:8080/urls/');
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

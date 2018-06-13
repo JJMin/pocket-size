@@ -23,6 +23,7 @@
       <tr>
         <th scope="col">Original URL</th>
         <th scope="col">Shortened URL</th>
+        <th scope="col">Delete URL</th>
       </tr>
     </thead>
 
@@ -34,6 +35,11 @@
           </th>
           <th>
             <%= i %>
+          </th>
+          <th>
+            <form method="POST" action="/urls/<%= i %>/delete">
+              <button type="button submit" class="btn btn-secondary btn-sm">DELETE</button>
+            </form>
           </th>
         </tr>
         <% }; %>
