@@ -1,9 +1,15 @@
 const express = require('express');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
-const bodyParser = require("body-parser");
 
 app.set("view engine", "ejs");
+
+/** Middleware:
+ *  the cookie-parser library facilitates working with cookies
+ */
+app.use(cookieParser());
 
 /** Middleware:
  *  the body-parser library allows us to access POST request parameters, 
@@ -19,14 +25,15 @@ app.use(bodyParser.urlencoded({
 const urlDatabase = {
   "i3x0dj": "http://www.reddit.com",
   "w93jgp": "http://www.google.com"
-}
+};
 
 /**
  *  a route that renders 'urls_index.ejs' (main page) which shows the URL database
  */
 app.get("/urls", (req, res) => {
   let templateVars = {
-    urls: urlDatabase
+    urls: urlDatabase,
+    username: req.cookies["username"]
   };
   res.render("urls_index", templateVars);
 });
@@ -35,7 +42,7 @@ app.get("/urls", (req, res) => {
  *  a route that redirects to main page that shows URL database
  */
 app.get("/", (req, res) => {
-  res.redirect('http://localhost:8080/urls/');
+  res.redirect('/urls');
 });
 
 /**
@@ -77,7 +84,7 @@ app.post("/urls", (req, res) => {
   let shortURL = shortURLGenerator();
   console.log(req.body, shortURL); // debug statement to see POST parameters
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect('http://localhost:8080/urls/' + shortURL);
+  res.redirect('/urls/' + shortURL);
 });
 
 /**
@@ -85,7 +92,7 @@ app.post("/urls", (req, res) => {
  */
 app.post("/urls/:id/update", (req, res) => {
   urlDatabase[req.params.id] = req.body.changeURL;
-  res.redirect('http://localhost:8080/urls/');
+  res.redirect('/urls');
 });
 
 /**
@@ -93,11 +100,29 @@ app.post("/urls/:id/update", (req, res) => {
  */
 app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
-  res.redirect('http://localhost:8080/urls/');
+  res.redirect('/urls');
+});
+
+/**
+ *  a route that handles the POST request for login to set a cookie named 'username' to the
+ *  value submitted in the request body via the login form 
+ */
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+
+/**
+ *  a route that handles the POST request for logout to clear the 'username' cookie and redirects
+ *  the user back to the main page ('/urls')
+ */
+app.post("/logout", (req, res) => {
+  res.clearCookie('username', req.body.username);
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Pocket-Size app is listening on port ${PORT}!`);
 });
 
 /** shortURLGenerator function:

@@ -1,7 +1,7 @@
 <!-- views/partials/_header.ejs -->
 
 <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-  <a class="navbar-brand" href="#">TinyApp</a>
+  <a class="navbar-brand" href="#">Pocket-Size</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
     aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
@@ -17,5 +17,20 @@
         <a class="nav-link" href="http://localhost:8080/urls/new">New URL</a>
       </li>
     </ul>
+
+
+    <% if(username){ %>
+      <ul class="nav-item form-inline my-0 my-lg-0 ml-auto">
+        <a class="nav-link disabled" href="#"><%= username %></a>
+      </ul>
+      <form action="/logout" method="POST" class="form-inline my-2 my-lg-0">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout</button>
+      </form>
+    <% } else{ %>  
+      <form action="/login" method="POST" class="form-inline my-2 my-lg-0 ml-auto">
+        <input class="form-control mr-sm-2" type="text" name="username" placeholder="username" aria-label="username">
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Login</button>
+      </form>
+    <% } %>
   </div>
 </nav>
