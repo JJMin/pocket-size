@@ -1,0 +1,33 @@
+{
+  "name": "pocket-size",
+  "version": "1.0.0",
+  "description": "Pocket-Size is a full stack web application that is built with Node.js and Express.js that allows users to shorten long URLS.",
+  "main": "express_server.js",
+  "scripts": {
+    "test": "nodemon -L express_server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JJMin/pocket-size.git"
+  },
+  "keywords": [
+    "full",
+    "stack",
+    "web",
+    "application",
+    "Node.js",
+    "Express.js",
+    "shorten",
+    "long",
+    "URLs"
+  ],
+  "author": "Eric Jae-Min Joo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JJMin/pocket-size/issues"
+  },
+  "homepage": "https://github.com/JJMin/pocket-size#readme",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
