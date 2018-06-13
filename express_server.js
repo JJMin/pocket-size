@@ -81,6 +81,14 @@ app.post("/urls", (req, res) => {
 });
 
 /**
+ *  a route that handles the POST request to update an existing shortened URL
+ */
+app.post("/urls/:id/update", (req, res) => {
+  urlDatabase[req.params.id] = req.body.changeURL;
+  res.redirect('http://localhost:8080/urls/');
+});
+
+/**
  *  a route that handles the POST request to delete a specific URL from the URL database
  */
 app.post("/urls/:id/delete", (req, res) => {
