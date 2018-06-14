@@ -95,10 +95,17 @@ app.get("/urls/:id", (req, res) => {
 });
 
 /**
- *  a route to handle shortURL requests that redirects user to its longURL
+ *  a route to handle shortURL requests that redirects user to its longURL (all shortURLs are publicly accessible)
  */
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.cookies["user_id"]][req.params.shortURL]);
+  for (const user_id in urlDatabase) {
+    for (const shortURL in urlDatabase[user_id]) {
+      if (urlDatabase[user_id].hasOwnProperty(req.params.shortURL)) {
+        res.redirect(urlDatabase[user_id][req.params.shortURL]);
+        break;
+      }
+    }
+  }
 });
 
 /** 
