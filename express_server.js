@@ -27,6 +27,22 @@ const urlDatabase = {
   "w93jgp": "http://www.google.com"
 };
 
+/** userDatabase:
+ *  contains all the information of users that registered
+ */
+const userDatabase = {
+  "vna83j": {
+    id: "vna83j",
+    email: "ericjaeminjoo@gmail.com",
+    password: "noodle"
+  },
+  "q03jir": {
+    id: "q03jir",
+    email: "okxcar@gmail.com",
+    password: "hotto_doggu"
+  }
+}
+
 /**
  *  a route that renders 'urls_index.ejs' (main page) which shows the URL database
  */
@@ -81,11 +97,19 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// TODO:
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_register", templateVars);
+});
+
 /** 
  *  a route that matches and handles the POST request when the user submits their long URL
  */
 app.post("/urls", (req, res) => {
-  let shortURL = shortURLGenerator();
+  let shortURL = randomStringGenerator();
   console.log(req.body, shortURL); // debug statement to see POST parameters
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect('/urls/' + shortURL);
@@ -125,6 +149,33 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
+// TODO:
+app.post("/register", (req, res) => {
+  let user_id = randomStringGenerator();
+
+  if (req.body.email == "" || req.body.password == "") {
+    res.statusCode = 400;
+    res.end('Do not leave input empty please.');
+  } else {
+    var emailExists = false;
+
+    for (const user in userDatabase) {
+      if (req.body.email == userDatabase[user].email) {
+        emailExists = true;
+        res.statusCode = 400;
+        res.end('Email already exists!');
+      } else if (!emailExists) {
+        userDatabase[user_id] = {
+          id: user_id,
+          email: req.body.email,
+          password: req.body.password
+        };
+        res.redirect('/urls');
+      }
+    }
+  }
+});
+
 /**
  *  the program will not exit, it will create a web server, which will sit there listening for requests 
  *  on port 8080, allowing you to access any local path on 8080
@@ -136,13 +187,13 @@ app.listen(PORT, () => {
 /** shortURLGenerator function:
  *  a function that generates a short, randomized URL
  */
-function shortURLGenerator() {
-  var randomizedURL = "";
+function randomStringGenerator() {
+  var randomizedString = "";
   var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   for (var i = 0; i < 6; i++) {
-    randomizedURL += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+    randomizedString += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
   }
 
-  return randomizedURL;
+  return randomizedString;
 }
