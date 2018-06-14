@@ -20,16 +20,16 @@
 
     <% if(user){ %>
       <ul class="nav-item form-inline my-0 my-lg-0 ml-auto">
-        <a class="nav-link disabled" href="#"><%= user.email %></a>
+        <a class="nav-link disabled" href="#">
+          <%= user.email %>
+        </a>
       </ul>
       <form action="/logout" method="POST" class="form-inline my-2 my-lg-0">
         <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Logout</button>
       </form>
-    <% } else{ %>  
-      <form action="/login" method="POST" class="form-inline my-2 my-lg-0 ml-auto">
-        <input class="form-control mr-sm-2" type="text" name="username" placeholder="username" aria-label="username">
-        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Login</button>
-      </form>
-    <% } %>
+      <% } else{ %>
+        <a class="btn btn-outline-success my-2 my-sm-0 ml-auto" href="/Register">Register</a>
+        <a class="btn btn-outline-success my-2 my-sm-0" style="margin-left: 18px" href="/login">Login</a>
+        <% } %>
   </div>
 </nav>

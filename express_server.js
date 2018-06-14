@@ -3,7 +3,6 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const app = express();
 const PORT = 8080; // default port 8080
-
 app.set("view engine", "ejs");
 
 /** Middleware:
@@ -47,11 +46,11 @@ const userDatabase = {
  *  a route that renders 'urls_index.ejs' (main page) which shows the URL database
  */
 app.get("/urls", (req, res) => {
-  let templateVars = {
+  let databaseObj = {
     urls: urlDatabase,
     user: req.cookies["user_id"]
   };
-  res.render("urls_index", templateVars);
+  res.render("urls_index", databaseObj);
 });
 
 /**
@@ -65,22 +64,22 @@ app.get("/", (req, res) => {
  *  a route that renders 'urls_new.ejs' page that takes a long URL input from user
  */
 app.get("/urls/new", (req, res) => {
-  let templateVars = {
+  let databaseObj = {
     user: req.cookies["user_id"]
   };
-  res.render("urls_new", templateVars);
+  res.render("urls_new", databaseObj);
 });
 
 /**
  *  a route that renders 'urls_show.ejs' page that shows the user the long and short URL
  */
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {
+  let databaseObj = {
     shortURL: req.params.id,
     urls: urlDatabase,
     user: req.cookies["user_id"]
   };
-  res.render("urls_show", templateVars);
+  res.render("urls_show", databaseObj);
 });
 
 /**
@@ -97,12 +96,24 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// TODO:
+/**
+ *  a route to handle the register request that renders the register page
+ */
 app.get("/register", (req, res) => {
-  let templateVars = {
+  let databaseObj = {
     user: req.cookies["user_id"]
   };
-  res.render("urls_register", templateVars);
+  res.render("urls_register", databaseObj);
+});
+
+/**
+ *  a route to handle the login request that renders the login page
+ */
+app.get("/login", (req, res) => {
+  let databaseObj = {
+    user: req.cookies["user_id"]
+  };
+  res.render("urls_login", databaseObj);
 });
 
 /** 
@@ -133,19 +144,34 @@ app.post("/urls/:id/delete", (req, res) => {
 
 /**
  *  a route that handles the POST request for login to set a cookie 'user_id' to the value of
- *  the entire user object by looking it up in the userDatabase
+ *  the user object id by looking it up in the userDatabase
  */
 app.post("/login", (req, res) => {
+  let userExists = false;
+
   for (const user in userDatabase) {
     if (req.body.username == userDatabase[user].email) {
-      res.cookie('user_id', userDatabase[user]);
+      userExists = true;
+      if (req.body.password == userDatabase[user].password) {
+        res.cookie('user_id', userDatabase[user].id);
+        res.redirect('/urls');
+        break;
+      } else {
+        res.statusCode = 403;
+        res.end('Password is incorrect.');
+        break;
+      }
     }
   }
-  res.redirect('/urls');
+
+  if (!userExists) {
+    res.statusCode = 403;
+    res.end('Email cannot be found.');
+  }
 });
 
 /**
- *  a route that handles the POST request for logout to clear the 'username' cookie and redirects
+ *  a route that handles the POST request for logout to clear the 'user_id' cookie and redirects
  *  the user back to the main page ('/urls')
  */
 app.post("/logout", (req, res) => {
@@ -153,7 +179,10 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
-// TODO:
+/**
+ *  a route that handles the POST request for registration to allow people to register for a user account
+ *  with an email and a password, then store the information into the user database
+ */
 app.post("/register", (req, res) => {
   let user_id = randomStringGenerator();
 
@@ -161,7 +190,7 @@ app.post("/register", (req, res) => {
     res.statusCode = 400;
     res.end('Do not leave input empty please.');
   } else {
-    var emailExists = false;
+    let emailExists = false;
 
     for (const user in userDatabase) {
       if (req.body.email == userDatabase[user].email) {
@@ -193,10 +222,10 @@ app.listen(PORT, () => {
  *  a function that generates a short, randomized URL
  */
 function randomStringGenerator() {
-  var randomizedString = "";
-  var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let randomizedString = "";
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-  for (var i = 0; i < 6; i++) {
+  for (let i = 0; i < 6; i++) {
     randomizedString += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
   }
 
