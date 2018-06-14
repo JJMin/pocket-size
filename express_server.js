@@ -54,7 +54,8 @@ const userDatabase = {
 app.get("/urls", (req, res) => {
   let databaseObj = {
     urls: urlDatabase[req.cookies["user_id"]],
-    user: req.cookies["user_id"]
+    user: req.cookies["user_id"],
+    username: req.cookies["user_username"]
   };
   res.render("urls_index", databaseObj);
 });
@@ -72,7 +73,8 @@ app.get("/", (req, res) => {
  */
 app.get("/urls/new", (req, res) => {
   let databaseObj = {
-    user: req.cookies["user_id"]
+    user: req.cookies["user_id"],
+    username: req.cookies["user_username"]
   };
 
   if (databaseObj.user) {
@@ -83,15 +85,26 @@ app.get("/urls/new", (req, res) => {
 });
 
 /**
- *  a route that renders 'urls_show.ejs' page that shows the user the long and short URL
+ *  a route that renders 'urls_show.ejs' page that shows the user only their own shortened URLs
  */
-app.get("/urls/:id", (req, res) => {
+app.get("/urls/:shortURL", (req, res) => {
   let databaseObj = {
-    shortURL: req.params.id,
+    shortURL: req.params.shortURL,
     urls: urlDatabase[req.cookies["user_id"]],
-    user: req.cookies["user_id"]
+    user: req.cookies["user_id"],
+    username: req.cookies["user_username"]
   };
-  res.render("urls_show", databaseObj);
+
+  for (const user_id in urlDatabase) {
+    if (user_id == databaseObj.user) {
+      for (const shortURL in urlDatabase[user_id]) {
+        if (shortURL == databaseObj.shortURL) {
+          res.render("urls_show", databaseObj);
+          break;
+        }
+      }
+    }
+  }
 });
 
 /**
@@ -100,7 +113,7 @@ app.get("/urls/:id", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   for (const user_id in urlDatabase) {
     for (const shortURL in urlDatabase[user_id]) {
-      if (urlDatabase[user_id].hasOwnProperty(req.params.shortURL)) {
+      if (shortURL == req.params.shortURL) {
         res.redirect(urlDatabase[user_id][req.params.shortURL]);
         break;
       }
@@ -120,7 +133,8 @@ app.get("/urls.json", (req, res) => {
  */
 app.get("/register", (req, res) => {
   let databaseObj = {
-    user: req.cookies["user_id"]
+    user: req.cookies["user_id"],
+    username: req.cookies["user_username"]
   };
   res.render("urls_register", databaseObj);
 });
@@ -130,7 +144,8 @@ app.get("/register", (req, res) => {
  */
 app.get("/login", (req, res) => {
   let databaseObj = {
-    user: req.cookies["user_id"]
+    user: req.cookies["user_id"],
+    username: req.cookies["user_username"]
   };
   res.render("urls_login", databaseObj);
 });
@@ -148,16 +163,16 @@ app.post("/urls", (req, res) => {
 /**
  *  a route that handles the POST request to update an existing shortened URL
  */
-app.post("/urls/:id/update", (req, res) => {
-  urlDatabase[req.cookies["user_id"]][req.params.id] = req.body.changeURL;
+app.post("/urls/:shortURL/update", (req, res) => {
+  urlDatabase[req.cookies["user_id"]][req.params.shortURL] = req.body.changeURL;
   res.redirect('/urls');
 });
 
 /**
  *  a route that handles the POST request to delete a specific URL from the URL database
  */
-app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.cookies["user_id"]][req.params.id];
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.cookies["user_id"]][req.params.shortURL];
   res.redirect('/urls');
 });
 
@@ -173,6 +188,7 @@ app.post("/login", (req, res) => {
       userExists = true;
       if (req.body.password == userDatabase[user].password) {
         res.cookie('user_id', userDatabase[user].id);
+        res.cookie('user_username', userDatabase[user].email);
         res.redirect('/urls');
         break;
       } else {
@@ -195,6 +211,7 @@ app.post("/login", (req, res) => {
  */
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
+  res.clearCookie('user_username');
   res.redirect('/urls');
 });
 
