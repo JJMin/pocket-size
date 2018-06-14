@@ -22,8 +22,14 @@ app.use(bodyParser.urlencoded({
  *  contains all URLs that can be dynamically added or removed from the object 
  */
 const urlDatabase = {
-  "i3x0dj": "http://www.reddit.com",
-  "w93jgp": "http://www.google.com"
+  "vna83j": {
+    "i3x0dj": "http://www.reddit.com",
+    "w93jgp": "http://www.youtube.com"
+  },
+  "q03jir": {
+    "f02fjg": "http://www.netflix.com",
+    "jg04jt": "http://www.facebook.com"
+  }
 };
 
 /** userDatabase:
@@ -33,12 +39,12 @@ const userDatabase = {
   "vna83j": {
     id: "vna83j",
     email: "ericjaeminjoo@gmail.com",
-    password: "noodle"
+    password: "1"
   },
   "q03jir": {
     id: "q03jir",
     email: "okxcar@gmail.com",
-    password: "hotto_doggu"
+    password: "1"
   }
 }
 
@@ -47,7 +53,7 @@ const userDatabase = {
  */
 app.get("/urls", (req, res) => {
   let databaseObj = {
-    urls: urlDatabase,
+    urls: urlDatabase[req.cookies["user_id"]],
     user: req.cookies["user_id"]
   };
   res.render("urls_index", databaseObj);
@@ -71,8 +77,7 @@ app.get("/urls/new", (req, res) => {
 
   if (databaseObj.user) {
     res.render("urls_new", databaseObj);
-  }
-  else if (!databaseObj.user) {
+  } else if (!databaseObj.user) {
     res.redirect('/urls');
   }
 });
@@ -83,7 +88,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let databaseObj = {
     shortURL: req.params.id,
-    urls: urlDatabase,
+    urls: urlDatabase[req.cookies["user_id"]],
     user: req.cookies["user_id"]
   };
   res.render("urls_show", databaseObj);
@@ -93,7 +98,7 @@ app.get("/urls/:id", (req, res) => {
  *  a route to handle shortURL requests that redirects user to its longURL
  */
 app.get("/u/:shortURL", (req, res) => {
-  res.redirect(urlDatabase[req.params.shortURL]);
+  res.redirect(urlDatabase[req.cookies["user_id"]][req.params.shortURL]);
 });
 
 /** 
@@ -128,8 +133,8 @@ app.get("/login", (req, res) => {
  */
 app.post("/urls", (req, res) => {
   let shortURL = randomStringGenerator();
-  console.log(req.body, shortURL); // debug statement to see POST parameters
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[req.cookies["user_id"]] = urlDatabase[req.cookies["user_id"]] || {};
+  urlDatabase[req.cookies["user_id"]][shortURL] = req.body.longURL;
   res.redirect('/urls/' + shortURL);
 });
 
@@ -137,7 +142,7 @@ app.post("/urls", (req, res) => {
  *  a route that handles the POST request to update an existing shortened URL
  */
 app.post("/urls/:id/update", (req, res) => {
-  urlDatabase[req.params.id] = req.body.changeURL;
+  urlDatabase[req.cookies["user_id"]][req.params.id] = req.body.changeURL;
   res.redirect('/urls');
 });
 
@@ -145,7 +150,7 @@ app.post("/urls/:id/update", (req, res) => {
  *  a route that handles the POST request to delete a specific URL from the URL database
  */
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
+  delete urlDatabase[req.cookies["user_id"]][req.params.id];
   res.redirect('/urls');
 });
 
@@ -160,7 +165,7 @@ app.post("/login", (req, res) => {
     if (req.body.username == userDatabase[user].email) {
       userExists = true;
       if (req.body.password == userDatabase[user].password) {
-        res.cookie('user_id', userDatabase[user].email);
+        res.cookie('user_id', userDatabase[user].id);
         res.redirect('/urls');
         break;
       } else {
