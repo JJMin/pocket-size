@@ -105,6 +105,13 @@ app.get("/urls/:shortURL", (req, res) => {
       }
     }
   }
+
+  if (!databaseObj.user) {
+    res.end("Please login to have access.");
+  }
+  else {
+    res.end("The URL you are trying to access does not belong to you.");
+  }
 });
 
 /**
