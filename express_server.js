@@ -61,13 +61,20 @@ app.get("/", (req, res) => {
 });
 
 /**
- *  a route that renders 'urls_new.ejs' page that takes a long URL input from user
+ *  a route that renders 'urls_new.ejs' page only for registered, logged in users that 
+ *  takes a long URL input and shortens it
  */
 app.get("/urls/new", (req, res) => {
   let databaseObj = {
     user: req.cookies["user_id"]
   };
-  res.render("urls_new", databaseObj);
+
+  if (databaseObj.user) {
+    res.render("urls_new", databaseObj);
+  }
+  else if (!databaseObj.user) {
+    res.redirect('/urls');
+  }
 });
 
 /**
@@ -153,7 +160,7 @@ app.post("/login", (req, res) => {
     if (req.body.username == userDatabase[user].email) {
       userExists = true;
       if (req.body.password == userDatabase[user].password) {
-        res.cookie('user_id', userDatabase[user].id);
+        res.cookie('user_id', userDatabase[user].email);
         res.redirect('/urls');
         break;
       } else {
