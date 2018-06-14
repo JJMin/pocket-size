@@ -49,7 +49,7 @@ const userDatabase = {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: req.cookies["user_id"]
   };
   res.render("urls_index", templateVars);
 });
@@ -66,7 +66,7 @@ app.get("/", (req, res) => {
  */
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"]
+    user: req.cookies["user_id"]
   };
   res.render("urls_new", templateVars);
 });
@@ -78,7 +78,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: req.cookies["user_id"]
   };
   res.render("urls_show", templateVars);
 });
@@ -100,7 +100,7 @@ app.get("/urls.json", (req, res) => {
 // TODO:
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"]
+    user: req.cookies["user_id"]
   };
   res.render("urls_register", templateVars);
 });
@@ -132,11 +132,15 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 /**
- *  a route that handles the POST request for login to set a cookie named 'username' to the
- *  value submitted in the request body via the login form 
+ *  a route that handles the POST request for login to set a cookie 'user_id' to the value of
+ *  the entire user object by looking it up in the userDatabase
  */
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  for (const user in userDatabase) {
+    if (req.body.username == userDatabase[user].email) {
+      res.cookie('user_id', userDatabase[user]);
+    }
+  }
   res.redirect('/urls');
 });
 
@@ -145,7 +149,7 @@ app.post("/login", (req, res) => {
  *  the user back to the main page ('/urls')
  */
 app.post("/logout", (req, res) => {
-  res.clearCookie('username', req.body.username);
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
@@ -171,6 +175,7 @@ app.post("/register", (req, res) => {
           password: req.body.password
         };
         res.redirect('/urls');
+        break;
       }
     }
   }
