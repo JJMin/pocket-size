@@ -94,12 +94,14 @@ app.get("/", (req, res) => {
 app.get("/urls/new", (req, res) => {
   let databaseObj = {
     user: req.session.user_id,
-    username: req.session.user_username
+    username: req.session.user_username,
+    messages: req.flash('error')
   };
 
   if (databaseObj.user) {
     res.render("urls_new", databaseObj);
   } else if (!databaseObj.user) {
+    req.flash('error', 'You must be registered and logged in to be able to shorten your long URL.')
     res.redirect('/urls');
   }
 });
