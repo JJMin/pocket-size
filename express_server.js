@@ -1,13 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session')
+const flash = require('connect-flash');
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 /** Middleware:
- *  the cookie-parser library facilitates working with cookies
+ *  the cookie-session library facilitates working with cookies
  */
 app.use(cookieSession({
   name: 'session',
@@ -21,6 +22,11 @@ app.use(cookieSession({
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+/** Middleware:
+ * the connect - flash library is a special area of the session used for storing messages
+ */
+app.use(flash());
 
 /** URL Database:
  *  contains all URLs that can be dynamically added or removed from the object 
@@ -100,9 +106,9 @@ app.get("/urls/:shortURL", (req, res) => {
   };
 
   for (const user_id in urlDatabase) {
-    if (user_id == databaseObj.user) {
+    if (user_id === databaseObj.user) {
       for (const shortURL in urlDatabase[user_id]) {
-        if (shortURL == databaseObj.shortURL) {
+        if (shortURL === databaseObj.shortURL) {
           res.render("urls_show", databaseObj);
           break;
         }
@@ -123,7 +129,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   for (const user_id in urlDatabase) {
     for (const shortURL in urlDatabase[user_id]) {
-      if (shortURL == req.params.shortURL) {
+      if (shortURL === req.params.shortURL) {
         res.redirect(urlDatabase[user_id][req.params.shortURL]);
         break;
       }
@@ -144,7 +150,8 @@ app.get("/urls.json", (req, res) => {
 app.get("/register", (req, res) => {
   let databaseObj = {
     user: req.session.user_id,
-    username: req.session.user_username
+    username: req.session.user_username,
+    messages: req.flash('error')
   };
   res.render("urls_register", databaseObj);
 });
@@ -155,7 +162,8 @@ app.get("/register", (req, res) => {
 app.get("/login", (req, res) => {
   let databaseObj = {
     user: req.session.user_id,
-    username: req.session.user_username
+    username: req.session.user_username,
+    messages: req.flash('error')
   };
   res.render("urls_login", databaseObj);
 });
@@ -194,7 +202,7 @@ app.post("/login", (req, res) => {
   let userExists = false;
 
   for (const user in userDatabase) {
-    if (req.body.username == userDatabase[user].email) {
+    if (req.body.username === userDatabase[user].email) {
       userExists = true;
       if (bcrypt.compareSync(req.body.password, userDatabase[user].password)) {
         req.session.user_id = userDatabase[user].id;
@@ -202,16 +210,16 @@ app.post("/login", (req, res) => {
         res.redirect('/urls');
         break;
       } else {
-        res.statusCode = 403;
-        res.end('Password is incorrect.');
+        req.flash('error', 'Wrong credentials!')
+        res.redirect('/login');
         break;
       }
     }
   }
 
   if (!userExists) {
-    res.statusCode = 403;
-    res.end('Email cannot be found.');
+    req.flash('error', 'That email does not exist.')
+    res.redirect('/login');
   }
 });
 
@@ -230,28 +238,31 @@ app.post("/logout", (req, res) => {
  */
 app.post("/register", (req, res) => {
   let user_id = randomStringGenerator();
+  let newUser = true;
 
-  if (req.body.email == "" || req.body.password == "") {
-    res.statusCode = 400;
-    res.end('Do not leave input empty please.');
-  } else {
-    let emailExists = false;
-
+  if (req.body.email === "" || req.body.password === "") {
+    req.flash('error', 'Please do not leave input empty.')
+    res.redirect('/register');
+  } 
+  
+  else {
     for (const user in userDatabase) {
-      if (req.body.email == userDatabase[user].email) {
-        emailExists = true;
-        res.statusCode = 400;
-        res.end('Email already exists!');
-      } else if (!emailExists) {
-        userDatabase[user_id] = {
-          id: user_id,
-          email: req.body.email,
-          password: bcrypt.hashSync(req.body.password, 10)
-        };
-        res.redirect('/urls');
+      if (req.body.email === userDatabase[user].email) {
+        newUser = false;
+        req.flash('error', 'Email is already registered.')
+        res.redirect('/register');
         break;
       }
     }
+  }
+
+  if (newUser) {
+    userDatabase[user_id] = {
+      id: user_id,
+      email: req.body.email,
+      password: bcrypt.hashSync(req.body.password, 10)
+    };
+    res.redirect('/urls');
   }
 });
 

@@ -25,6 +25,9 @@
           <label for="password">Password</label>
           <input type="password" class="form-control" id="password" name="password" placeholder="Password">
         </div>
+        <% if (messages.length > 0) { %>
+          <div class="alert alert-danger" role="alert"> <%=  messages; %> </div>
+        <% } %>
         <button type="submit" class="btn btn-primary" value="submit">Submit</button>
       </form>
     </div>
