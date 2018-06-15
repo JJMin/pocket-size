@@ -17,7 +17,6 @@
     <% include partials/_header %>
   </header>
 
-  <h1>URLs</h1>
   <table class="table">
     <thead class="thead-dark">
       <tr>
@@ -52,9 +51,9 @@
     </tbody>
   </table>
 
-  <h1>Shorten a new URL:
-    <a href="/urls/new">click here!</a>
-  </h1>
+  <% if (messages.length > 0) { %>
+    <div class="alert alert-danger" role="alert"> <%=  messages; %> </div>
+  <% } %>
 </body>
 
 </html>

@@ -14,7 +14,7 @@
 
 <body>
   <% include partials/_header %>
-    <div class="container col-md-5 col-md-auto" style="margin-top: 210px">
+  <div class="container col-md-5 col-md-auto border border-primary" style="padding: 60px; margin-top: 100px">
       <form action="/register" method="POST" class="justify-content-md-center">
         <div class="form-group">
           <label for="email">Email address</label>
@@ -28,7 +28,12 @@
         <% if (messages.length > 0) { %>
           <div class="alert alert-danger" role="alert"> <%=  messages; %> </div>
         <% } %>
-        <button type="submit" class="btn btn-primary" value="submit">Submit</button>
+        <div class="form-row text-center">
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary" value="submit" style="padding: 8px 75px">Register</button>
+            <p>Have an account already? <a href="/login">Sign In Now</a></p>
+          </div>
+        </div>
       </form>
     </div>
 </body>

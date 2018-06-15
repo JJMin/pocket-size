@@ -65,7 +65,8 @@ app.get("/urls", (req, res) => {
   let databaseObj = {
     urls: urlDatabase[req.session.user_id],
     user: req.session.user_id,
-    username: req.session.user_username
+    username: req.session.user_username,
+    messages: req.flash('error')
   };
   res.render("urls_index", databaseObj);
 });
@@ -74,7 +75,16 @@ app.get("/urls", (req, res) => {
  *  a route that redirects to main page that shows URL database
  */
 app.get("/", (req, res) => {
-  res.redirect('/urls');
+  let databaseObj = {
+    user: req.session.user_id,
+    username: req.session.user_username
+  };
+  
+  if (databaseObj.user) {
+    res.render("urls_new", databaseObj);
+  } else if (!databaseObj.user) {
+    res.redirect('/login');
+  }
 });
 
 /**
@@ -102,24 +112,30 @@ app.get("/urls/:shortURL", (req, res) => {
     shortURL: req.params.shortURL,
     urls: urlDatabase[req.session.user_id],
     user: req.session.user_id,
-    username: req.session.user_username
+    username: req.session.user_username,
+    messages: req.flash('error')
   };
+  let userFound = false;
 
   for (const user_id in urlDatabase) {
     if (user_id === databaseObj.user) {
       for (const shortURL in urlDatabase[user_id]) {
         if (shortURL === databaseObj.shortURL) {
+          userFound = true;
           res.render("urls_show", databaseObj);
           break;
         }
       }
     }
   }
-
+  
   if (!databaseObj.user) {
-    res.end("Please login to have access.");
-  } else {
-    res.end("The URL you are trying to access does not belong to you.");
+    req.flash('error', 'Please login to have access.')
+    res.redirect('/login');
+  }
+  if (databaseObj.user && userFound === false) {
+    req.flash('error', 'The URL you are trying to access does not belong to you.')
+    res.redirect('/urls');
   }
 });
 
@@ -243,9 +259,7 @@ app.post("/register", (req, res) => {
   if (req.body.email === "" || req.body.password === "") {
     req.flash('error', 'Please do not leave input empty.')
     res.redirect('/register');
-  } 
-  
-  else {
+  } else {
     for (const user in userDatabase) {
       if (req.body.email === userDatabase[user].email) {
         newUser = false;
