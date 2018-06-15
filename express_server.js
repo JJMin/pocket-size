@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -108,8 +109,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
   if (!databaseObj.user) {
     res.end("Please login to have access.");
-  }
-  else {
+  } else {
     res.end("The URL you are trying to access does not belong to you.");
   }
 });
@@ -193,7 +193,7 @@ app.post("/login", (req, res) => {
   for (const user in userDatabase) {
     if (req.body.username == userDatabase[user].email) {
       userExists = true;
-      if (req.body.password == userDatabase[user].password) {
+      if (bcrypt.compareSync(req.body.password, userDatabase[user].password)) {
         res.cookie('user_id', userDatabase[user].id);
         res.cookie('user_username', userDatabase[user].email);
         res.redirect('/urls');
@@ -244,7 +244,7 @@ app.post("/register", (req, res) => {
         userDatabase[user_id] = {
           id: user_id,
           email: req.body.email,
-          password: req.body.password
+          password: bcrypt.hashSync(req.body.password, 10)
         };
         res.redirect('/urls');
         break;
