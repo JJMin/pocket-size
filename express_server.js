@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session')
 const bcrypt = require('bcryptjs');
 const app = express();
 const PORT = 8080; // default port 8080
@@ -9,7 +9,10 @@ app.set("view engine", "ejs");
 /** Middleware:
  *  the cookie-parser library facilitates working with cookies
  */
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 
 /** Middleware:
  *  the body-parser library allows us to access POST request parameters, 
@@ -54,9 +57,9 @@ const userDatabase = {
  */
 app.get("/urls", (req, res) => {
   let databaseObj = {
-    urls: urlDatabase[req.cookies["user_id"]],
-    user: req.cookies["user_id"],
-    username: req.cookies["user_username"]
+    urls: urlDatabase[req.session.user_id],
+    user: req.session.user_id,
+    username: req.session.user_username
   };
   res.render("urls_index", databaseObj);
 });
@@ -74,8 +77,8 @@ app.get("/", (req, res) => {
  */
 app.get("/urls/new", (req, res) => {
   let databaseObj = {
-    user: req.cookies["user_id"],
-    username: req.cookies["user_username"]
+    user: req.session.user_id,
+    username: req.session.user_username
   };
 
   if (databaseObj.user) {
@@ -91,9 +94,9 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   let databaseObj = {
     shortURL: req.params.shortURL,
-    urls: urlDatabase[req.cookies["user_id"]],
-    user: req.cookies["user_id"],
-    username: req.cookies["user_username"]
+    urls: urlDatabase[req.session.user_id],
+    user: req.session.user_id,
+    username: req.session.user_username
   };
 
   for (const user_id in urlDatabase) {
@@ -140,8 +143,8 @@ app.get("/urls.json", (req, res) => {
  */
 app.get("/register", (req, res) => {
   let databaseObj = {
-    user: req.cookies["user_id"],
-    username: req.cookies["user_username"]
+    user: req.session.user_id,
+    username: req.session.user_username
   };
   res.render("urls_register", databaseObj);
 });
@@ -151,8 +154,8 @@ app.get("/register", (req, res) => {
  */
 app.get("/login", (req, res) => {
   let databaseObj = {
-    user: req.cookies["user_id"],
-    username: req.cookies["user_username"]
+    user: req.session.user_id,
+    username: req.session.user_username
   };
   res.render("urls_login", databaseObj);
 });
@@ -162,8 +165,8 @@ app.get("/login", (req, res) => {
  */
 app.post("/urls", (req, res) => {
   let shortURL = randomStringGenerator();
-  urlDatabase[req.cookies["user_id"]] = urlDatabase[req.cookies["user_id"]] || {};
-  urlDatabase[req.cookies["user_id"]][shortURL] = req.body.longURL;
+  urlDatabase[req.session.user_id] = urlDatabase[req.session.user_id] || {};
+  urlDatabase[req.session.user_id][shortURL] = req.body.longURL;
   res.redirect('/urls/' + shortURL);
 });
 
@@ -171,7 +174,7 @@ app.post("/urls", (req, res) => {
  *  a route that handles the POST request to update an existing shortened URL
  */
 app.post("/urls/:shortURL/update", (req, res) => {
-  urlDatabase[req.cookies["user_id"]][req.params.shortURL] = req.body.changeURL;
+  urlDatabase[req.session.user_id][req.params.shortURL] = req.body.changeURL;
   res.redirect('/urls');
 });
 
@@ -179,7 +182,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
  *  a route that handles the POST request to delete a specific URL from the URL database
  */
 app.post("/urls/:shortURL/delete", (req, res) => {
-  delete urlDatabase[req.cookies["user_id"]][req.params.shortURL];
+  delete urlDatabase[req.session.user_id][req.params.shortURL];
   res.redirect('/urls');
 });
 
@@ -194,8 +197,8 @@ app.post("/login", (req, res) => {
     if (req.body.username == userDatabase[user].email) {
       userExists = true;
       if (bcrypt.compareSync(req.body.password, userDatabase[user].password)) {
-        res.cookie('user_id', userDatabase[user].id);
-        res.cookie('user_username', userDatabase[user].email);
+        req.session.user_id = userDatabase[user].id;
+        req.session.user_username = userDatabase[user].email;
         res.redirect('/urls');
         break;
       } else {
@@ -217,8 +220,7 @@ app.post("/login", (req, res) => {
  *  the user back to the main page ('/urls')
  */
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
-  res.clearCookie('user_username');
+  req.session = null;
   res.redirect('/urls');
 });
 
