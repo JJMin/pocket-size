@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session')
 const flash = require('connect-flash');
 const bcrypt = require('bcryptjs');
+const methodOverride = require('method-override')
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -24,9 +25,15 @@ app.use(bodyParser.urlencoded({
 }));
 
 /** Middleware:
- * the connect - flash library is a special area of the session used for storing messages
+ * the connect-flash library is a special area of the session used for storing messages
  */
 app.use(flash());
+
+/** Middleware:
+ *  the method-override library allows you to use HTTP verbs such as PUT or DELETE in places where
+ *  the client does not support it (it will override with POST having ?_method=DELETE)
+ */
+app.use(methodOverride("_method"))
 
 /** URL Database:
  *  contains all URLs that can be dynamically added or removed from the object 
@@ -79,7 +86,7 @@ app.get("/", (req, res) => {
     user: req.session.user_id,
     username: req.session.user_username
   };
-  
+
   if (databaseObj.user) {
     res.render("urls_new", databaseObj);
   } else if (!databaseObj.user) {
@@ -130,7 +137,7 @@ app.get("/urls/:shortURL", (req, res) => {
       }
     }
   }
-  
+
   if (!databaseObj.user) {
     req.flash('error', 'Please login to have access.')
     res.redirect('/login');
@@ -199,7 +206,7 @@ app.post("/urls", (req, res) => {
 /**
  *  a route that handles the POST request to update an existing shortened URL
  */
-app.post("/urls/:shortURL/update", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   urlDatabase[req.session.user_id][req.params.shortURL] = req.body.changeURL;
   res.redirect('/urls');
 });
@@ -207,7 +214,7 @@ app.post("/urls/:shortURL/update", (req, res) => {
 /**
  *  a route that handles the POST request to delete a specific URL from the URL database
  */
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   delete urlDatabase[req.session.user_id][req.params.shortURL];
   res.redirect('/urls');
 });
