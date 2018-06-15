@@ -285,7 +285,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 10)
     };
-    res.redirect('/urls');
+    res.redirect('/login');
   }
 });
 
@@ -302,7 +302,7 @@ app.listen(PORT, () => {
  */
 function randomStringGenerator() {
   let randomizedString = "";
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
   for (let i = 0; i < 6; i++) {
     randomizedString += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
