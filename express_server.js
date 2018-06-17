@@ -8,6 +8,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
+app.use(express.static(__dirname + '/public'));
+
 /** Middleware:
  *  the cookie-session library facilitates working with cookies
  */
