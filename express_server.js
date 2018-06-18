@@ -77,7 +77,13 @@ app.get("/urls", (req, res) => {
     username: req.session.user_username,
     messages: req.flash('error')
   };
-  res.render("urls_index", databaseObj);
+  
+  if (databaseObj.user) {
+    res.render("urls_index", databaseObj);
+  } else if (!databaseObj.user) {
+    req.flash('error', 'Please login to have access.')
+    res.redirect('/login');
+  }
 });
 
 /**
@@ -92,6 +98,7 @@ app.get("/", (req, res) => {
   if (databaseObj.user) {
     res.render("urls_new", databaseObj);
   } else if (!databaseObj.user) {
+    req.flash('error', 'Please login to have access.')
     res.redirect('/login');
   }
 });
