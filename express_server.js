@@ -190,11 +190,17 @@ app.get("/urls.json", (req, res) => {
  */
 app.get("/register", (req, res) => {
   let databaseObj = {
+    urls: urlDatabase[req.session.user_id],
     user: req.session.user_id,
     username: req.session.user_username,
     messages: req.flash('error')
   };
-  res.render("urls_register", databaseObj);
+
+  if (databaseObj.user) {
+    res.render("urls_index", databaseObj);
+  } else if (!databaseObj.user) {
+    res.render("urls_register", databaseObj);
+  }
 });
 
 /**
@@ -202,11 +208,17 @@ app.get("/register", (req, res) => {
  */
 app.get("/login", (req, res) => {
   let databaseObj = {
+    urls: urlDatabase[req.session.user_id],
     user: req.session.user_id,
     username: req.session.user_username,
     messages: req.flash('error')
   };
-  res.render("urls_login", databaseObj);
+
+  if (databaseObj.user) {
+    res.render("urls_index", databaseObj);
+  } else if (!databaseObj.user) {
+    res.render("urls_login", databaseObj);
+  }
 });
 
 /** 
