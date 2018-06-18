@@ -91,12 +91,14 @@ app.get("/urls", (req, res) => {
  */
 app.get("/", (req, res) => {
   let databaseObj = {
+    urls: urlDatabase[req.session.user_id],
     user: req.session.user_id,
-    username: req.session.user_username
+    username: req.session.user_username,
+    messages: req.flash('error')
   };
 
   if (databaseObj.user) {
-    res.render("urls_new", databaseObj);
+    res.render("urls_index", databaseObj);
   } else if (!databaseObj.user) {
     req.flash('error', 'Please login to have access.')
     res.redirect('/login');
@@ -161,13 +163,18 @@ app.get("/urls/:shortURL", (req, res) => {
  *  a route to handle shortURL requests that redirects user to its longURL (all shortURLs are publicly accessible)
  */
 app.get("/u/:shortURL", (req, res) => {
+  let unknownURL = true;
   for (const user_id in urlDatabase) {
     for (const shortURL in urlDatabase[user_id]) {
       if (shortURL === req.params.shortURL) {
+        unknownURL = false;
         res.redirect(urlDatabase[user_id][req.params.shortURL]);
         break;
       }
     }
+  }
+  if (unknownURL) {
+    throw new Error("ERROR, URL does not exist.");
   }
 });
 
